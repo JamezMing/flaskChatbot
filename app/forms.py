@@ -8,4 +8,4 @@ class LoginForm(Form):
 
 
 class ChatForm(Form):
-    inputfields = StringField('input', validators=[DataRequired()])
+    inputfield = StringField('inputfield', validators=[DataRequired()])

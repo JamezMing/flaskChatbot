@@ -31,16 +31,6 @@
             border-bottom: 1px dotted #B3A9A9;
         }
 
-        .chat li.left .chat-body
-        {
-            margin-left: 60px;
-        }
-
-        .chat li.right .chat-body
-        {
-            margin-right: 60px;
-        }
-
         .chat li .chat-body p
         {
             margin: 0;
@@ -82,7 +72,7 @@
                                         <strong class="primary-font">Bot</strong> <small class="pull-right text-muted"></small>
                                     </div>
                                     <p>
-                                        {{ chat.body }}
+                                        said : {{ chat.body }}
                                     </p>
                                 </div>
                             </li>
@@ -95,7 +85,7 @@
                                         <strong class="pull-right primary-font">Me</strong>
                                     </div>
                                     <p>
-                                        {{ chat.body }}
+                                        said : {{ chat.body }}
                                     </p>
                                 </div>
                             </li>
@@ -105,11 +95,14 @@
                     </div>
                     <div class="panel-footer">
                         <div class="input-group">
-                            {{ form.inputfields(size = 60) }}
-                            <span class="input-group-btn">
-                                <button class="btn btn-warning btn-sm" id="btn-chat">
-                                    Send</button>
-                            </span>
+                            <form action = "/chat/" method = "post" name="inputfield">
+                                {{ form.hidden_tag() }}
+                                <p>{{ form.inputfield(size = 60) }}</p>
+                                <span class="input-group-btn">
+                                        <button class="btn" id="btn-chat" name="send-msg" type="submit">
+                                        Send</button>
+                                </span>
+                            </form>
                         </div>
                     </div>
                 </div>
