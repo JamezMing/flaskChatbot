@@ -19,7 +19,7 @@ class Processor:
         for i in range(0, len(lineArr)):
             if self.Dict.check(lineArr[i]) == False:
                 if len(self.Database.isProduct(lineArr[i])) != 0:
-                    if i + 1 < lineArr:
+                    if i + 1 < len(lineArr):
                         w = lineArr[i] + " " + lineArr[i+1]
                         if len(self.Database.isProduct(w)) != 0:
                             sug = w

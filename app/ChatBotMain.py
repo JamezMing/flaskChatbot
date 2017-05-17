@@ -28,7 +28,7 @@ if __name__ == "__main__":
                         if len(WD.isProduct(w)) != 0:
                             sug = w
                             continue
-                    sug = WD.isProduct(lineArr[i])[0]
+                    sug = lineArr[i]
                     print sug
                 else:
                     sug = dic.suggest(lineArr[i])[0]
@@ -42,6 +42,7 @@ if __name__ == "__main__":
         proc.printOutput()
 
         pro = POST.Token(proc.getIntent(), proc.getSubject(), proc.getAction(), proc.getEnquires())
+        print pro.process()
 
 
 

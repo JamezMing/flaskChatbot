@@ -1,0 +1,22 @@
+# Set your own cluster name. Keep the "-frontend" suffix and use port 80
+# for your frontend to be automatically added to the LS reverse proxy.
+cluster:  chatbot-app
+image:    autodeskls/flaskChatbot
+debug:    true
+ports:
+  - 80
+
+verbatim:
+  cpus: 1.0
+  mem: 512
+  # TODO to download private images
+  #uris:
+  #  - "file:///home/core/.dockercfg"
+
+  constraints:
+    -
+      - hostname
+      - UNIQUE
+
+settings:
+  chatbot-app_log_level: "WARN"
