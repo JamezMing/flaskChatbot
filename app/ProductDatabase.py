@@ -32,6 +32,14 @@ class ProductLanguageDatabase:
         con.commit()
         # con.close()
         self.df = con
+        query = "PRAGMA table_info(t);"
+        cur = self.df.cursor()
+        cur.execute(query)
+        res = cur.fetchall()
+        res_col = [i[1] for i in res]
+        self.langdict = {}
+        for i in range(0, len(res_col)):
+            self.langdict[i] = res[i][1]
 
     def checkLanguageAvaliability(self, product, language):
         #Is Autocad 360 avaliable in French?, return boolean
@@ -49,11 +57,16 @@ class ProductLanguageDatabase:
         print cur.fetchall()
 
     def getAllAvaliableLanguages(self, product):
-        #TODO
-        #query = "SELECT Language FROM t WHERE Language = '" + product + "'"
+        query = "SELECT * FROM t WHERE Language = '" + product + "'"
+        res = []
         cur = self.df.cursor()
         cur.execute(query)
-        print cur.fetchall()
+        stats = cur.fetchall()[0]
+        for i in range(1, len(stats)):
+            if stats[i] != '':
+                res.append(self.langdict.get(i))
+        return res
+
 
     def isProduct(self, name):
         query = "SELECT Language FROM t WHERE Language = '" + name + "'"
@@ -65,4 +78,22 @@ class ProductLanguageDatabase:
         else:
             return True
 
+    def isPartOfName(self, name):
+        query = "SELECT Language FROM t"
+        cur = self.df.cursor()
+        cur.execute(query)
+        res = [r[0] for r in cur.fetchall()]
+        keys = {}
+        for name in res:
+            words = name.strip().split(" ")
+            for word in words:
+                if word not in keys:
+                    keys.setdefault(word, [])
+                keys[word].append(name.strip())
+        print keys['AutoCAD']
 
+
+
+
+P = ProductLanguageDatabase()
+P.isPartOfName("Civil")

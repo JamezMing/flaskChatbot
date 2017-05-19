@@ -44,7 +44,12 @@ class Token:
 
                             if query.lower().strip() in WB.dataQuriesLang and (PLD.isProduct(top.strip())) and intent.lower().strip() in WB.dataQuestionHowMuch:
                                 #Return avaliable languages for the product.
-                                return "The product " + top + " is available in English, Chinese and Japanese"
+                                languages = PLD.getAllAvaliableLanguages(top.strip())
+                                ans_str = "The product " + top.strip() + " is available in "
+                                for i in range(0, len(languages) -1):
+                                    ans_str = ans_str + languages[i] + ", "
+                                ans_str = ans_str + "and " + languages[-1] + "."
+                                return ans_str
                             elif action.lower().strip() in WB.dataReleasing and intent.lower().strip() in WB.dataQuestionTime and (PLD.isProduct(top.strip())) :
                                 return "The product " + top + " will be releasing in Jan 2017. "
                             elif query.lower().strip() == "development processes" and top in WB.dataProduct:
@@ -68,7 +73,12 @@ class Token:
 
                             if query.lower().strip() in WB.dataQuriesLang and (PLD.isProduct(top.strip()))  and intent.lower().strip() in WB.dataQuestionHowMuch:
                                 #Return avaliable languages for the product.
-                                return "The product " + top + " is available in English, Chinese and Japanese"
+                                languages = PLD.getAllAvaliableLanguages(top.strip())
+                                ans_str = "The product " + top.strip() + " is available in "
+                                for i in range(0, len(languages) -1):
+                                    ans_str = ans_str + languages[i] + ", "
+                                ans_str = ans_str + "and " + languages[-1] + "."
+                                return ans_str
                             elif query.lower().strip() == "development processes" and (PLD.isProduct(top.strip())) :
                                 return "The product " + top + " needs Kit Prep, SW Engineering processes in localization. "
                             elif query.lower().strip() == "li units" and (PLD.isProduct(top.strip())) :
