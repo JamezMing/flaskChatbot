@@ -1,4 +1,6 @@
 import csv, sqlite3
+from fuzzywuzzy import fuzz, process
+
 
 class ProductLanguageDatabase:
     def __init__(self, path = '/home/james/PycharmProjects/flaskChatbot/database/db.csv'):
@@ -8,8 +10,8 @@ class ProductLanguageDatabase:
 
         cur = con.cursor()
         cur.execute(
-            "CREATE TABLE t (Language, French, Italian, German, Spanish, Japanese, Korean, Simplified_Chinese, Tranditional_Chinese, Czech, "
-            "Hungarian, Russian, Polish, Brazilian_Portuguese, Danish, Finnish, Dutch, Norwegian"
+            "CREATE TABLE t (Language, French, Italian, German, Spanish, Japanese, Korean, 'Simplified Chinese', 'Tranditional Chinese', Czech, "
+            "Hungarian, Russian, Polish, 'Brazilian Portuguese', Danish, Finnish, Dutch, Norwegian"
             ",Swedish,  Romanian, Portuguese, Arabic, Hindi, Indonesian, Thai, Turkish, "
             "Vietnamese, Hebrew);")  # use your column names here
 
@@ -24,8 +26,8 @@ class ProductLanguageDatabase:
                       i['Hindi'], i['Indonesian'], i['Thai'], i['Turkish'], i['Vietnamese'], i['Hebrew']) for i in dr]
 
         cur.executemany(
-            "INSERT INTO t (Language, French, Italian, German, Spanish, Japanese, Korean, Simplified_Chinese, Tranditional_Chinese, Czech, "
-            "Hungarian, Russian, Polish, Brazilian_Portuguese, Danish, Finnish, Dutch, Norwegian"
+            "INSERT INTO t (Language, French, Italian, German, Spanish, Japanese, Korean, 'Simplified Chinese', 'Tranditional Chinese', Czech, "
+            "Hungarian, Russian, Polish, 'Brazilian Portuguese', Danish, Finnish, Dutch, Norwegian"
             ",Swedish,  Romanian, Portuguese, Arabic, Hindi, Indonesian, Thai, Turkish, "
             "Vietnamese, Hebrew) VALUES (?, ?, ?, ?, ?, ? ,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
             to_db)
@@ -57,7 +59,7 @@ class ProductLanguageDatabase:
         print cur.fetchall()
 
     def getAllAvaliableLanguages(self, product):
-        query = "SELECT * FROM t WHERE Language = '" + product + "'"
+        query = "SELECT * FROM t WHERE UPPER(Language) = '" + product.upper() + "'"
         res = []
         cur = self.df.cursor()
         cur.execute(query)
@@ -69,7 +71,7 @@ class ProductLanguageDatabase:
 
 
     def isProduct(self, name):
-        query = "SELECT Language FROM t WHERE Language = '" + name + "'"
+        query = "SELECT Language FROM t WHERE UPPER(Language) = '" + name.upper() + "'"
         cur = self.df.cursor()
         cur.execute(query)
         res = cur.fetchall()
@@ -78,22 +80,58 @@ class ProductLanguageDatabase:
         else:
             return True
 
-    def isPartOfName(self, name):
+    def findClosetMatch(self, name):
+        query = "SELECT Language FROM t"
+        cur = self.df.cursor()
+        cur.execute(query)
+        res = [r[0] for r in cur.fetchall()]
+        max = 0
+        match = ""
+        poset = process.extract(name, res)
+        for po in poset:
+            score = int(fuzz.token_sort_ratio(name, po[0])) * int(po[1])
+            if score > max:
+                max = score
+                match = po[0]
+        return match
+
+
+    def findPossibleMatches(self, name):
+        query = "SELECT Language FROM t"
+        cur = self.df.cursor()
+        cur.execute(query)
+        res = [r[0] for r in cur.fetchall()]
+        return process.extract(name, res)
+
+    def getMatchScore(self, name):
+        query = "SELECT Language FROM t"
+        cur = self.df.cursor()
+        cur.execute(query)
+        res = [r[0] for r in cur.fetchall()]
+        max = 0
+        poset = process.extract(name, res)
+        for po in poset:
+            score = int(fuzz.token_sort_ratio(name, po[0])) * int(po[1])
+            if score > max:
+                max = score
+        return score
+
+
+
+    def isPartOfName(self, n):
         query = "SELECT Language FROM t"
         cur = self.df.cursor()
         cur.execute(query)
         res = [r[0] for r in cur.fetchall()]
         keys = {}
-        for name in res:
+        for name in ((r.lower()) for r in res):
             words = name.strip().split(" ")
             for word in words:
                 if word not in keys:
                     keys.setdefault(word, [])
                 keys[word].append(name.strip())
-        print keys['AutoCAD']
+        print n.lower()
+        return (n.lower() in keys.keys())
 
 
 
-
-P = ProductLanguageDatabase()
-P.isPartOfName("Civil")

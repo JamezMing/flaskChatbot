@@ -10,3 +10,7 @@ class POSTagger:
         return self.tagger.tag(line)
 
 
+tagger = POSTagger()
+while(True):
+    str = raw_input("please input: ")
+    print tagger.parse(str)

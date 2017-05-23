@@ -2,6 +2,7 @@ import WordDatabase
 import pandas
 import MySQLdb
 import ProductDatabase
+from GCSODatabase import GCSODatabase
 
 class Token:
 
@@ -14,6 +15,7 @@ class Token:
     def process(self):
         WB = WordDatabase.WordDatabase()
         PLD = ProductDatabase.ProductLanguageDatabase()
+        GCSO = GCSODatabase()
         modiflag = False
         for act in self.action:
             if (act.lower() == "localize" or act.lower() == "localise" or act.lower() == "translate") and len(self.query) == 0:
@@ -42,7 +44,7 @@ class Token:
                             print "Topic: " + top
                             print "Intent: " + str(self.intent)
 
-                            if query.lower().strip() in WB.dataQuriesLang and (PLD.isProduct(top.strip())) and intent.lower().strip() in WB.dataQuestionHowMuch:
+                            if query.lower().strip() in WB.dataQuriesLang and (PLD.getMatchScore(query.strip()) > 2000) and intent.lower().strip() in WB.dataQuestionHowMuch:
                                 #Return avaliable languages for the product.
                                 languages = PLD.getAllAvaliableLanguages(top.strip())
                                 ans_str = "The product " + top.strip() + " is available in "
@@ -71,7 +73,7 @@ class Token:
                             print "Topic: " + top
                             print "Intent: " + str(self.intent)
 
-                            if query.lower().strip() in WB.dataQuriesLang and (PLD.isProduct(top.strip()))  and intent.lower().strip() in WB.dataQuestionHowMuch:
+                            if query.lower().strip() in WB.dataQuriesLang and (PLD.getMatchScore(query.strip()) > 2000) and intent.lower().strip() in WB.dataQuestionHowMuch:
                                 #Return avaliable languages for the product.
                                 languages = PLD.getAllAvaliableLanguages(top.strip())
                                 ans_str = "The product " + top.strip() + " is available in "
@@ -95,20 +97,19 @@ class Token:
             for intent in self.intent:
                 for query in self.query:
                     for action in self.action:
+                        if action.lower().strip() in WB.dataReleasing and intent.lower().strip() in WB.dataQuestionTime and (PLD.getMatchScore(query.strip()) > 2000):
+                            product = PLD.findClosetMatch(query.strip())
+                            ans = "The product " + product + " will is releasing in "
+                            ptok = GCSO.findProduct(product)
+                            ans = ans + ptok.FCSDate
+                            return ans
 
-                            print "Query: " + query
-                            print "Intent: " + str(self.intent)
-
-
-                            if action.lower().strip() in WB.dataReleasing and intent.lower().strip() in WB.dataQuestionTime and (PLD.isProduct(query.strip())) :
-                                return "The product " + query + " will be releasing in Jan 2017. "
-
-                            elif (PLD.isProduct(query.strip())):
-                                for intent in self.intent:
-                                    if intent.lower().strip() == "available":
-                                        for sub in self.topic:
-                                            if sub.strip() in WB.dataLanguage:
-                                                return "The product " + query + " is available in " + sub + "."
+                        elif (PLD.isProduct(query.strip())):
+                            for intent in self.intent:
+                                if intent.lower().strip() == "available":
+                                    for sub in self.topic:
+                                        if sub.strip() in WB.dataLanguage:
+                                            return "The product " + query + " is available in " + sub + "."
 
         return "I don't know"
 
