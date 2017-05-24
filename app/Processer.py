@@ -1,5 +1,5 @@
 import POSTagger
-import WordDatabase
+from ProductDatabase import ProductLanguageDatabase as PLD
 import POSProcessor
 import POSToken
 import enchant
@@ -8,7 +8,7 @@ class Processor:
     def __init__(self, path_tagger = "/home/james/Downloads/stanford-postagger-full-2016-10-31/stanford-postagger.jar"):
         self.POSTagger = POSTagger.POSTagger(path_to_jar=path_tagger)
         self.Dict = enchant.Dict("en_US")
-        self.Database = WordDatabase.WordDatabase()
+        self.Database = PLD()
         self.Symbolset  = "~`!@#$%^&*()_-+={}[]:>;',</?*-+"
 
     def process_line(self, line):
@@ -16,7 +16,7 @@ class Processor:
             if ch in self.Symbolset:
                 line.replace(ch, '')
         lineArr = line.split(" ")
-        for i in range(0, len(lineArr)):
+        '''for i in range(0, len(lineArr)):
             if self.Dict.check(lineArr[i]) == False:
                 if len(self.Database.isProduct(lineArr[i])) != 0:
                     if i + 1 < len(lineArr):
@@ -25,10 +25,20 @@ class Processor:
                             sug = w
                             continue
                     sug = self.Database.isProduct(lineArr[i])[0]
-                    print sug
                 else:
                     sug = self.Dict.suggest(lineArr[i])[0]
-                lineArr = [sug if x==lineArr[i] else x for x in lineArr]
+                lineArr = [sug if x==lineArr[i] else x for x in lineArr]'''
+        for i in range(0, len(lineArr)):
+            if PLD.isPartOfName(lineArr[i]) == False:
+                if self.Dict.check(lineArr[i]) == False:
+                    sug = self.Dict.suggest(lineArr[i])[0]
+                else:
+                    sug = lineArr[i]
+            else:
+                sug = lineArr[i]
+            lineArr = [sug if x == lineArr[i] else x for x in lineArr]
+
+
         str = ' '.join(lineArr)
         pos = self.POSTagger.parse(str)
         proc = POSProcessor.Processor(pos)

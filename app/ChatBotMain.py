@@ -23,13 +23,18 @@ if __name__ == "__main__":
                 linecpy.replace(ch, '')
         linecpy = re.sub('[^0-9a-zA-Z ]+', '', linecpy)
         lineArr = linecpy.split(" ")
+
         for i in range(0, len(lineArr)):
-            if prod_db.isPartOfName(lineArr[i]):
-                sug = lineArr[i]
+            if prod_db.isPartOfName(lineArr[i]) == False:
+                if dic.check(lineArr[i]) == False:
+                    sug = dic.suggest(lineArr[i])[0]
+                else:
+                    sug = lineArr[i]
             else:
-                sug = dic.suggest(lineArr[i])[0]
-        lineArr = [sug if x==lineArr[i] else x for x in lineArr]
+                sug = lineArr[i]
+            lineArr = [sug if x == lineArr[i] else x for x in lineArr]
         str = ' '.join(lineArr)
+        print str
 
         pos = tagger.parse(str)
         proc = PP.Processor(pos)

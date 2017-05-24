@@ -40,76 +40,96 @@ class Token:
                 for intent in self.intent:
                     for top in self.topic:
                         for action in self.action:
-                            print "Query: " + query
-                            print "Topic: " + top
-                            print "Intent: " + str(self.intent)
+                            if query.lower().strip() in WB.dataQuriesLang and (PLD.getMatchScore(top.strip()) > 2000) and intent.lower().strip() in WB.dataQuestionHowMuch:
 
-                            if query.lower().strip() in WB.dataQuriesLang and (PLD.getMatchScore(query.strip()) > 2000) and intent.lower().strip() in WB.dataQuestionHowMuch:
                                 #Return avaliable languages for the product.
-                                languages = PLD.getAllAvaliableLanguages(top.strip())
-                                ans_str = "The product " + top.strip() + " is available in "
+                                languages = PLD.getAllAvaliableLanguages(PLD.findClosetMatch(top.strip()))
+                                ans_str = "The product " + PLD.findClosetMatch(top.strip()) + " is available in "
                                 for i in range(0, len(languages) -1):
                                     ans_str = ans_str + languages[i] + ", "
                                 ans_str = ans_str + "and " + languages[-1] + "."
                                 return ans_str
-                            elif action.lower().strip() in WB.dataReleasing and intent.lower().strip() in WB.dataQuestionTime and (PLD.isProduct(top.strip())) :
-                                return "The product " + top + " will be releasing in Jan 2017. "
+                            elif action.lower().strip() in WB.dataReleasing and intent.lower().strip() in WB.dataQuestionTime and (PLD.getMatchScore(query.strip()) > 2000) :
+                                product = PLD.findClosetMatch(query.strip())
+                                ans = "The product " + product + " will is releasing in "
+                                ptok = GCSO.findProduct(product)
+                                try:
+                                    assert ptok != None
+                                except AssertionError:
+                                    return "Internal Database Error"
+                                ans = ans + ptok.FCSDate
+                                return ans
                             elif query.lower().strip() == "development processes" and top in WB.dataProduct:
                                 return "The product " + top + " needs Kit Prep, SW Engineering processes in localization. "
-                            elif query.lower().strip() == "li units" and (PLD.isProduct(top.strip())) :
+                            elif query.lower().strip() == "li units" and (PLD.getMatchScore(query.strip()) > 2000) :
                                 for field in self.topic:
                                     if field.strip() in WB.dataDevComponents:
                                         return "The " + field + " process of product " + top + " needs 10 LI Units to finish. "
-                            elif query.strip() in WB.dataProduct:
+                            elif (PLD.getMatchScore(query.strip()) > 2000):
                                 for intent in self.intent:
                                     if intent.lower().strip() == "available":
                                         for sub in self.topic:
-                                            if sub.strip() in WB.dataLanguage:
-                                                return "The product " + query + " is available in " + sub + "."
+                                            if sub.strip() in PLD.getAllLangOptions():
+                                                if PLD.checkLanguageAvaliability(PLD.findClosetMatch(query),
+                                                                                 sub.strip()):
+                                                    return "The product " + PLD.findClosetMatch(query) + " is available in " + sub + "."
+                                                else:
+                                                    return "The product " + PLD.findClosetMatch(query) + " is not available in " + sub + "."
             for intent in self.intent:
                 for query in self.query:
                     for top in self.topic:
-                            print "Query: " + query
-                            print "Topic: " + top
-                            print "Intent: " + str(self.intent)
 
-                            if query.lower().strip() in WB.dataQuriesLang and (PLD.getMatchScore(query.strip()) > 2000) and intent.lower().strip() in WB.dataQuestionHowMuch:
-                                #Return avaliable languages for the product.
-                                languages = PLD.getAllAvaliableLanguages(top.strip())
-                                ans_str = "The product " + top.strip() + " is available in "
-                                for i in range(0, len(languages) -1):
-                                    ans_str = ans_str + languages[i] + ", "
-                                ans_str = ans_str + "and " + languages[-1] + "."
-                                return ans_str
-                            elif query.lower().strip() == "development processes" and (PLD.isProduct(top.strip())) :
-                                return "The product " + top + " needs Kit Prep, SW Engineering processes in localization. "
-                            elif query.lower().strip() == "li units" and (PLD.isProduct(top.strip())) :
-                                for field in self.topic:
-                                    if field.strip() in WB.dataDevComponents:
-                                        return "The " + field + " process of product " + top + " needs 10 LI Units to finish. "
-                            elif query.strip() in WB.dataProduct:
-                                for intent in self.intent:
-                                    if intent.lower().strip() == "available":
-                                        for sub in self.topic:
-                                            if sub.strip() in WB.dataLanguage:
-                                                return "The product " + query + " is available in " + sub + "."
+                        if query.lower().strip() in WB.dataQuriesLang and (PLD.getMatchScore(top.strip()) > 2000) and intent.lower().strip() in WB.dataQuestionHowMuch:
+                            #Return avaliable languages for the product.
+                            languages = PLD.getAllAvaliableLanguages(PLD.findClosetMatch(top.strip()))
+                            ans_str = "The product " + PLD.findClosetMatch(top.strip()) + " is available in "
+                            for i in range(0, len(languages) -1):
+                                ans_str = ans_str + languages[i] + ", "
+                            ans_str = ans_str + "and " + languages[-1] + "."
+                            return ans_str
+                        elif query.lower().strip() == "development processes" and (PLD.getMatchScore(top.strip()) > 2000) :
+                            return "The product " + top + " needs Kit Prep, SW Engineering processes in localization. "
+                        elif query.lower().strip() == "li units" and (PLD.getMatchScore(top.strip()) > 2000) :
+                            for field in self.topic:
+                                if field.strip() in WB.dataDevComponents:
+                                    return "The " + field + " process of product " + top + " needs 10 LI Units to finish. "
+                        elif(PLD.getMatchScore(query.strip()) > 2000):
+                            for intent in self.intent:
+                                if intent.lower().strip() == "available":
+                                    for sub in self.topic:
+                                        if sub.strip() in PLD.getAllLangOptions():
+                                            if PLD.checkLanguageAvaliability(PLD.findClosetMatch(query), sub.strip()):
+                                                return "The product " + PLD.findClosetMatch(query) + " is available in " + sub + "."
+                                            else:
+                                                return "The product " + PLD.findClosetMatch(query) + " is not available in " + sub + "."
+
 
             for intent in self.intent:
                 for query in self.query:
                     for action in self.action:
-                        if action.lower().strip() in WB.dataReleasing and intent.lower().strip() in WB.dataQuestionTime and (PLD.getMatchScore(query.strip()) > 2000):
+                        print 3
+                        if action.lower().strip() in WB.dataReleasing and intent.lower().strip() in WB.dataQuestionTime and (PLD.getMatchScore(query.strip()) > 1000):
                             product = PLD.findClosetMatch(query.strip())
-                            ans = "The product " + product + " will is releasing in "
+                            ans = "The product " + product + " is releasing in "
                             ptok = GCSO.findProduct(product)
+                            try:
+                                assert ptok != None
+                            except AssertionError:
+                                return "Internal Database Error"
                             ans = ans + ptok.FCSDate
                             return ans
 
-                        elif (PLD.isProduct(query.strip())):
+
+                        elif (PLD.getMatchScore(query.strip()) > 2000):
                             for intent in self.intent:
                                 if intent.lower().strip() == "available":
                                     for sub in self.topic:
-                                        if sub.strip() in WB.dataLanguage:
-                                            return "The product " + query + " is available in " + sub + "."
+                                        if sub.strip() in PLD.getAllLangOptions():
+                                            if PLD.checkLanguageAvaliability(PLD.findClosetMatch(query), sub.strip()):
+                                                return "The product " + PLD.findClosetMatch(query) + " is available in " + sub + "."
+                                            else:
+                                                return "The product " + PLD.findClosetMatch(query) + " is not available in " + sub + "."
+
 
         return "I don't know"
 

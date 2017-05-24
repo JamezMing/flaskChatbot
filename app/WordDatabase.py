@@ -16,7 +16,7 @@ class WordDatabase:
         self.dataQuestionHowMuch = ["how much","how many"]
         self.dataQuestionWho = ["who"]
         self.dataQuestionTime = ["when", "what time"]
-        self.dataReleasing = ["releasing", "release"]
+        self.dataReleasing = ["releasing", "release", "released", "publish", "post", "upload", "launch", "available", "launched",  "announce", "disclose", "reveal", "distribute" ]
         self.dataAction = ["localise", "translate", "localize"]
         self.dataReset = ["new conversation", "start over", "end the session", "end session"]
 

@@ -10,7 +10,7 @@ class ProductLanguageDatabase:
 
         cur = con.cursor()
         cur.execute(
-            "CREATE TABLE t (Language, French, Italian, German, Spanish, Japanese, Korean, 'Simplified Chinese', 'Tranditional Chinese', Czech, "
+            "CREATE TABLE t (Language, French, Italian, German, Spanish, Japanese, Korean, 'Simplified Chinese', 'Chinese' ,'Tranditional Chinese', Czech, "
             "Hungarian, Russian, Polish, 'Brazilian Portuguese', Danish, Finnish, Dutch, Norwegian"
             ",Swedish,  Romanian, Portuguese, Arabic, Hindi, Indonesian, Thai, Turkish, "
             "Vietnamese, Hebrew);")  # use your column names here
@@ -19,17 +19,17 @@ class ProductLanguageDatabase:
             # csv.DictReader uses first line in file for column headings by default
             dr = csv.DictReader(fin)  # comma is default delimiter
             to_db = [(i['Count of Language'], i['French'], i['Italian'], i['German'], i['Spanish'], i['Japanese'],
-                      i['Korean'], i['Simplified Chinese'],
+                      i['Korean'], i['Simplified Chinese'],i['Simplified Chinese'],
                       i['Tranditional Chinese'], i['Czech'], i['Hungarian'], i['Russian'], i['Polish'],
                       i['Brazilian Portuguese'], i['Danish'],
                       i['Finnish'], i['Dutch'], i['Norwegian'], i['Swedish'], i['Romanian'], i['Portuguese'], i['Arabic'],
                       i['Hindi'], i['Indonesian'], i['Thai'], i['Turkish'], i['Vietnamese'], i['Hebrew']) for i in dr]
 
         cur.executemany(
-            "INSERT INTO t (Language, French, Italian, German, Spanish, Japanese, Korean, 'Simplified Chinese', 'Tranditional Chinese', Czech, "
+            "INSERT INTO t (Language, French, Italian, German, Spanish, Japanese, Korean, 'Simplified Chinese', Chinese, 'Tranditional Chinese', Czech, "
             "Hungarian, Russian, Polish, 'Brazilian Portuguese', Danish, Finnish, Dutch, Norwegian"
             ",Swedish,  Romanian, Portuguese, Arabic, Hindi, Indonesian, Thai, Turkish, "
-            "Vietnamese, Hebrew) VALUES (?, ?, ?, ?, ?, ? ,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
+            "Vietnamese, Hebrew) VALUES (?, ?, ?, ?, ?, ? ,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
             to_db)
         con.commit()
         # con.close()
@@ -45,11 +45,15 @@ class ProductLanguageDatabase:
 
     def checkLanguageAvaliability(self, product, language):
         #Is Autocad 360 avaliable in French?, return boolean
-        query = "SELECT " + language + "FROM t WHERE Language = '" + product + "'"
+        query = "SELECT " + language + " FROM t WHERE Language = '" + product + "'"
         cur = self.df.cursor()
         cur.execute(query)
-        assert len(cur.fetchall()) != 0
-        return float(cur.fetchall()[0][0]) == 0
+        #print cur.fetchall()
+        res = cur.fetchall()
+        if res[0][0] == '':
+            return False
+        elif int(float(res[0][0])) != 0:
+            return True
 
     def getAllUnavaliableProducts(self, language):
         #What are the products avaliable in French?
@@ -114,7 +118,7 @@ class ProductLanguageDatabase:
             score = int(fuzz.token_sort_ratio(name, po[0])) * int(po[1])
             if score > max:
                 max = score
-        return score
+        return int(score)
 
 
 
@@ -130,8 +134,18 @@ class ProductLanguageDatabase:
                 if word not in keys:
                     keys.setdefault(word, [])
                 keys[word].append(name.strip())
-        print n.lower()
-        return (n.lower() in keys.keys())
+
+        if str(n).lower() not in (k.lower() for k in keys.keys()):
+                return False
+        return True
+
+    def getAllLangOptions(self):
+        query = "pragma table_info(t)"
+        cur = self.df.cursor()
+        cur.execute(query)
+        return [lang[1] for lang in cur.fetchall()[1:]]
 
 
 
+pd = ProductLanguageDatabase()
+print pd.findClosetMatch("Civil 3D")

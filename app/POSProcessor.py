@@ -1,4 +1,5 @@
 from nltk.tag import StanfordPOSTagger
+from ProductDatabase import ProductLanguageDatabase
 import nltk
 
 class Processor:
@@ -13,12 +14,17 @@ class Processor:
         self.negate = False
 
     def posTokenGen(self):
+        pdb = ProductLanguageDatabase()
         listFlags = list()
         listNN = ("NN", "NNP", "NNS")
         listVB = ("VB", "VBD","VBN", "VP", "VBZ", "VBP")
         listBE = ("is", "are", "were", "was", "am")
         listNeg = ("not", "n't")
         skip = 0
+        for i in range(0, len(self.posList)):
+            if pdb.isPartOfName(self.posList[i][0]):
+                self.posList[i] = (self.posList[i][0], u'NN')
+
         for i in range(0, len(self.posList)):
             if self.posList[i][1] in listVB and i < len(self.posList)-1 and self.posList[i+1][1] == "RB" and self.posList[i+1][0] in listNeg:
                 self.negate = not self.negate
@@ -32,6 +38,9 @@ class Processor:
             elif "WRB" in listFlags and "BE" in listFlags and self.posList[i][1] == "VBG":
                 print "C23"
                 self.action.append(self.posList[i][0])
+
+            elif i < len(self.posList)-1 and self.posList[i][1] == "IN" and ((self.posList[i+1][0].lower()) in [u.lower() for u in pdb.getAllLangOptions()]):
+                self.subject.append(self.posList[i+1][0])
 
             elif i < 2 and self.posList[i][0].lower() in listBE and i < len(self.posList)-1 and self.posList[i+1][1] in listNN:
                 print "C1"
@@ -49,6 +58,9 @@ class Processor:
                     self.intent.append(self.posList[j+1][0])
                     skip = skip + 1
 
+            elif i < 3 and self.posList[i][0] == "MD" and i < len(self.posList) - 1 and self.posList[i+1][0] == "NNP":
+                self.enquiryfield.append(self.posList[i+1][1])
+                skip = 1
 
             elif self.posList[i][1] == "WRB" and self.posList[i+1][1] == "JJ" and (self.posList[i+2][1] in listNN) and i < len(self.posList)-2 and i < 2:
                 print "C2"
