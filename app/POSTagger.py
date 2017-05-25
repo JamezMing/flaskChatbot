@@ -14,5 +14,4 @@ class POSTagger:
 while(True):
     str = raw_input("please input: ")
     res =  tagger.parse(str)
-    res[0] = (u'HAHA', u'HAHA')
     print res'''

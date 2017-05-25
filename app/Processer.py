@@ -16,20 +16,8 @@ class Processor:
             if ch in self.Symbolset:
                 line.replace(ch, '')
         lineArr = line.split(" ")
-        '''for i in range(0, len(lineArr)):
-            if self.Dict.check(lineArr[i]) == False:
-                if len(self.Database.isProduct(lineArr[i])) != 0:
-                    if i + 1 < len(lineArr):
-                        w = lineArr[i] + " " + lineArr[i+1]
-                        if len(self.Database.isProduct(w)) != 0:
-                            sug = w
-                            continue
-                    sug = self.Database.isProduct(lineArr[i])[0]
-                else:
-                    sug = self.Dict.suggest(lineArr[i])[0]
-                lineArr = [sug if x==lineArr[i] else x for x in lineArr]'''
         for i in range(0, len(lineArr)):
-            if PLD.isPartOfName(lineArr[i]) == False:
+            if self.Database.isPartOfName(lineArr[i]) == False:
                 if self.Dict.check(lineArr[i]) == False:
                     sug = self.Dict.suggest(lineArr[i])[0]
                 else:

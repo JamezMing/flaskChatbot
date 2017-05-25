@@ -15,36 +15,49 @@ class Processor:
 
     def posTokenGen(self):
         pdb = ProductLanguageDatabase()
-        listFlags = list()
+        #List Flags has different scenarios:
+        listFlags = {'hasBE': False, 'hasDO': False, 'hasWRB': False}
         listNN = ("NN", "NNP", "NNS")
         listVB = ("VB", "VBD","VBN", "VP", "VBZ", "VBP")
         listBE = ("is", "are", "were", "was", "am")
-        listNeg = ("not", "n't")
+        listDO = ("do", "did", "does", "done")
         skip = 0
+        #Mark out product names and languages
         for i in range(0, len(self.posList)):
             if pdb.isPartOfName(self.posList[i][0]):
                 self.posList[i] = (self.posList[i][0], u'NN')
+            if self.posList[i][0].lower() in [l.lower() for l in pdb.getAllLangOptions()]:
+                self.posList[i] = (self.posList[i][0], u'NN')
+
 
         for i in range(0, len(self.posList)):
-            if self.posList[i][1] in listVB and i < len(self.posList)-1 and self.posList[i+1][1] == "RB" and self.posList[i+1][0] in listNeg:
-                self.negate = not self.negate
+            #Handle Skip command
             if skip:
                 skip -= 1
                 continue
-            if self.posList[i][1] == "WRB" and self.posList[i+1][1] == "RB" and i < len(self.posList)-1 and i < 2:
-                print "C0"
+
+            #Intent: Asking about which aspect
+            #Topic: Target of the question
+
+
+            if  i < len(self.posList)-1 and self.posList[i][1] == "WRB" and self.posList[i+1][1] == "RB" and i < 2:
                 self.intent.append(self.posList[i][0] + " " + self.posList[i+1][0])
 
-            elif "WRB" in listFlags and "BE" in listFlags and self.posList[i][1] == "VBG":
-                print "C23"
+            elif listFlags['hasWRB'] == True and listFlags['hasBE'] == True and self.posList[i][1] == "VBG":
                 self.action.append(self.posList[i][0])
 
-            elif i < len(self.posList)-1 and self.posList[i][1] == "IN" and ((self.posList[i+1][0].lower()) in [u.lower() for u in pdb.getAllLangOptions()]):
+            # How many
+            elif  i < len(self.posList)-1 and self.posList[i][1] == "WRB" and self.posList[i+1][1] == "JJ" and i < 2:
+                self.intent.append(self.posList[i][0] + " " + self.posList[i+1][0])
+
+            #C23 deleted
+            #In English/In Chinese etc
+            elif i < len(self.posList)-1 and self.posList[i][1] == "IN" and (self.posList[i+1][1] == 'LANG'):
                 self.subject.append(self.posList[i+1][0])
 
-            elif i < 2 and self.posList[i][0].lower() in listBE and i < len(self.posList)-1 and self.posList[i+1][1] in listNN:
-                print "C1"
-                listFlags.append("BE")
+            #When is AutoCAD releasing? /How many languages are AutoCAD released in?(Be verb with product name
+            elif i <= 3 and self.posList[i][0].lower() in listBE and i < len(self.posList)-1 and self.posList[i+1][1]in listNN:
+                listFlags['hasBE'] = True
                 self.intent.append(self.posList[i][0])
                 j = i + 1
                 enquiry = ""
@@ -54,16 +67,15 @@ class Processor:
                 j = j - 1
                 self.enquiryfield.append(enquiry)
                 skip = j - i
-                if self.posList[j+1][1] == "JJ" or self.posList[j+1][1] == "VBN":
+                if self.posList[j+1][1] == "JJ" or self.posList[j+1][1] == "VBN" or self.posList[j+1][1] == "VBD":
                     self.intent.append(self.posList[j+1][0])
                     skip = skip + 1
-
-            elif i < 3 and self.posList[i][0] == "MD" and i < len(self.posList) - 1 and self.posList[i+1][0] == "NNP":
+            #MD: Could, Would, will etc. Modal + Noun Phrases: Will Autocad be released in May? In this case, Autocad is the enquiry
+            elif i < 3 and self.posList[i][0] == "MD" and i < len(self.posList) - 1 and (self.posList[i+1][0] in listNN):
                 self.enquiryfield.append(self.posList[i+1][1])
                 skip = 1
-
+            #WRB: When, where etc. , how many locales
             elif self.posList[i][1] == "WRB" and self.posList[i+1][1] == "JJ" and (self.posList[i+2][1] in listNN) and i < len(self.posList)-2 and i < 2:
-                print "C2"
                 self.intent.append(self.posList[i][0] + " " + self.posList[i+1][0])
                 j = i+2
                 enquiry = ""
@@ -72,18 +84,28 @@ class Processor:
                     j=j+1
                 self.enquiryfield.append(enquiry)
                 skip = j - i
-
-            elif self.posList[i][1] == "WP" and self.posList[i+1][1] in listVB and self.posList[i+2][1] == "DT" and (self.posList[i+3][1] in listNN) and i < len(self.posList)-3 and i < 2:
-                print "C3"
+            #How many + product name
+            elif self.posList[i][1] == "WRB" and self.posList[i+1][1] == "JJ" and (self.posList[i+2][1] == 'PDT') and i < len(self.posList)-2 and i < 2:
                 self.intent.append(self.posList[i][0] + " " + self.posList[i+1][0])
-                j = i+3
+                j = i+2
                 enquiry = ""
-                while (j < len(self.posList) and (self.posList[j][1] in listNN)):
+                while (j < len(self.posList) and (self.posList[j][1] == 'PDT')):
                     enquiry = enquiry + self.posList[j][0] + " "
                     j=j+1
                 self.enquiryfield.append(enquiry)
                 skip = j - i
 
+            #WP: Who, what + verb: Who took my cheese? Who took away his meaning of life?
+            elif self.posList[i][1] == "WP" and self.posList[i+1][1] in listVB and (self.posList[i+2][1] == "DT" or self.posList[i+2][1] == 'PRP$') and (self.posList[i+3][1] in listNN) and i < len(self.posList)-3 and i < 2:
+                self.intent.append(self.posList[i][0] + " " + self.posList[i+1][0])
+                enquiry = ""
+                if self.posList[j][1] in listNN:
+                    while (j < len(self.posList) and (self.posList[j][1] in listNN)):
+                        enquiry = enquiry + self.posList[j][0] + " "
+                        j=j+1
+                    self.enquiryfield.append(enquiry)
+                    skip = j - i
+            #What languages does Autocad support?
             elif self.posList[i][1] == "WP" and self.posList[i+1][1] in listNN and self.posList[i+2][1] in listBE and i < len(self.posList)-1:
                 print "C4"
                 self.intent.append(self.posList[i][0])
@@ -97,7 +119,6 @@ class Processor:
 
             #I want to know what languages are avaliable for Autocad?
             elif self.posList[i][1] == "WP" and self.posList[i+1][1] in listNN and i < len(self.posList)-1:
-                print "C5"
                 self.intent.append(self.posList[i][0])
                 j = i+1
                 enquiry = ""
@@ -107,9 +128,8 @@ class Processor:
                 self.enquiryfield.append(enquiry)
                 skip = j - i
 
-
+            #What languages does Autocad support?
             elif self.posList[i][1] == "WDT" and self.posList[i+1][1] in listNN and i < len(self.posList)-1:
-                print "C6"
                 self.intent.append(self.posList[i][0])
                 j = i+1
                 enquiry = ""
@@ -119,9 +139,8 @@ class Processor:
                 self.enquiryfield.append(enquiry)
                 skip = j - i
 
-
+            #I want to know how often does the product renew?
             elif i < len(self.posList) - 3 and self.posList[i][1] == "VB" and self.posList[i+1][1] == "WRB" and self.posList[i+2][1] == "RB" and (self.posList[i+3][1] in listNN):
-                print "C7"
                 self.intent.append(self.posList[i+1][0] + " " + self.posList[i + 3][0])
                 j = i+3
                 enquiry = ""
@@ -130,8 +149,9 @@ class Processor:
                     j=j+1
                 self.enquiryfield.append(enquiry)
                 skip = j - i
+
+            #Handle clauses: I want to know how much effort can you putt in?
             elif i < len(self.posList) - 3 and self.posList[i][1] == "VB" and self.posList[i+1][1] == "WRB" and self.posList[i+2][1] == "JJ" and (self.posList[i+3][1] in listNN):
-                print "C8"
                 self.intent.append(self.posList[i+1][0] + " " + self.posList[i + 2][0])
                 j = i+3
                 enquiry = ""
@@ -140,34 +160,36 @@ class Processor:
                     j=j+1
                 self.enquiryfield.append(enquiry)
                 skip = j - i
+
+            #Clauses with no noun phrases
             elif i < len(self.posList) - 2 and self.posList[i][1] == "VB" and self.posList[i+1][1] == "WRB" and self.posList[i+2][1] == "RB":
-                print "C9"
                 self.intent.append(self.posList[i+1][0] + " " + self.posList[i + 2][0])
             elif i < len(self.posList) - 2 and self.posList[i][1] == "VB" and self.posList[i+1][1] == "WRB" and self.posList[i+2][1] == "JJ":
-                print "C10"
                 self.intent.append(self.posList[i+1][0] + " " + self.posList[i + 2][0])
+
+            #How much more do you want? (Without noun at the back)
             elif self.posList[i][1] == "WRB" and self.posList[i+1][1] == "JJ" and i < len(self.posList)-1 and i < 2:
-                print "C11"
                 self.intent.append(self.posList[i][0] + " " + self.posList[i+1][0])
+
+
             elif self.posList[i][1] == "WRB" and i < 2:
-                listFlags.append("WRB")
-                print "C12"
+                listFlags['hasWRB'] = True
                 self.intent.append(self.posList[i][0])
+
             elif self.posList[i][1] == "WP" and i < 2:
-                print "C13"
                 self.intent.append(self.posList[i][0])
+
             elif self.posList[i][1] == "WDT" and self.posList[i+1][1] in listNN and i < len(self.posList) and i < 2:
-                print "C14"
                 self.intent.append(self.posList[i][0])
                 self.enquiryfield.append(self.posList[i+1][0])
+
             elif self.posList[i][1] == "WDT" and i < 2:
-                print "C15"
                 self.intent.append(self.posList[i][0])
+
             elif i > 0 and self.posList[i - 1][1] == "IN" and self.posList[i][1] == "VBG":
-                print "C16"
                 self.action.append(self.posList[i][0])
+
             elif self.posList[i][1] in listVB :
-                print "C17"
                 if self.posList[i][0] in listBE:
                     if self.posList[i+1][1] == "DT":
                         self.action.append(self.posList[i][0])
@@ -181,9 +203,11 @@ class Processor:
                                 break
                 else:
                     self.action.append(self.posList[i][0])
+
             elif self.posList[i][1] == "NN" and i < len(self.posList) - 2 and self.posList[i + 1][1] == "CC" and self.posList[i + 2][1] == "NN":
                 print "C18"
                 self.subject.append(self.posList[i][0] + " " + self.posList[i + 1][0] + " " + self.posList[i + 2][0])
+
             elif self.posList[i][1] in listNN and i < len(self.posList)-1 and self.posList[i+1][1] in listNN:
                 print "C19"
                 enquiry = self.posList[i][0] + " "
@@ -193,12 +217,15 @@ class Processor:
                     j = j + 1
                 self.subject.append(enquiry)
                 skip = j - i
+
             elif self.posList[i][1] in listNN and i < len(self.posList) - 1 and self.posList[i + 1][1] == "CD":
                 print "C20"
                 self.subject.append(self.posList[i][0] + " " + self.posList[i + 1][0])
+
             elif self.posList[i][1] in listNN:
                 print "C21"
                 self.subject.append(self.posList[i][0])
+
             elif self.posList[i][1] == "NN" and i < len(self.posList)-1 and self.posList[i+1][1] == "CC":
                 print "C22"
                 self.connector.append(self.posList[i+1][0])

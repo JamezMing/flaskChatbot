@@ -4,7 +4,7 @@ class WordDatabase:
         self.dataLanguage = ["Japanese", "English", "French", "German", "Chinese", "Korean", "Turkey"]
         self.dataKeyPhrases = ["LI Units", "word units", "words"]
         self.dataTime = ["time"]
-        self.dataQuriesLang = ["languages", "versions", "language", "version"]
+        self.dataQuriesLang = ["languages", "versions", "language", "version", "locales", "locale"]
         self.dataAvaliability = ["are avaliable", "is avaliable", "was avaliable", "were avaliable"]
         self.dataTranslationComponents = ["Repeated Words", "Words to review", "Updated words", "new words"]
         self.dataDevComponents = ["SW Engineering", "Testing Execution", "Testing Kit Prep"]

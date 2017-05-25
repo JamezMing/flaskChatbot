@@ -5,7 +5,7 @@ from fuzzywuzzy import fuzz, process
 class ProductLanguageDatabase:
     def __init__(self, path = '/home/james/PycharmProjects/flaskChatbot/database/db.csv'):
 
-        con = sqlite3.connect(":memory:")
+        con = sqlite3.connect(":memory:", check_same_thread=False)
         con.text_factory = str
 
         cur = con.cursor()
@@ -32,7 +32,7 @@ class ProductLanguageDatabase:
             "Vietnamese, Hebrew) VALUES (?, ?, ?, ?, ?, ? ,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
             to_db)
         con.commit()
-        # con.close()
+        #con.close()
         self.df = con
         query = "PRAGMA table_info(t);"
         cur = self.df.cursor()
@@ -108,6 +108,11 @@ class ProductLanguageDatabase:
         return process.extract(name, res)
 
     def getMatchScore(self, name):
+        name_arr = name.split(" ")
+        for n in name_arr:
+            if n.lower() in [l.lower() for l in self.getAllLangOptions()]:
+                name_arr.remove(n)
+        name = " ".join(name_arr)
         query = "SELECT Language FROM t"
         cur = self.df.cursor()
         cur.execute(query)
@@ -147,5 +152,3 @@ class ProductLanguageDatabase:
 
 
 
-pd = ProductLanguageDatabase()
-print pd.findClosetMatch("Civil 3D")
