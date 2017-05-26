@@ -1,6 +1,5 @@
 import WordDatabase
-import pandas
-import MySQLdb
+
 import ProductDatabase
 from GCSODatabase import GCSODatabase
 
@@ -35,13 +34,39 @@ class Token:
                 return "The total output should be 2000 dollars"
                 self.project.clear()
         else:
+            for intent in self.intent:
+                for top in self.topic:
+                    for action in self.action:
+                        if action.lower().strip() in WB.dataReleasing and intent.lower().strip() in WB.dataQuestionTime and (
+                            PLD.getMatchScore(top.strip()) > 2000):
+                            lang = False
+                            lang_option = None
+                            for q in top.strip().split(" "):
+                                if q.lower() in [l.lower() for l in PLD.getAllLangOptions()]:
+                                    lang = True
+                                    lang_option = q
+                            if lang == True:
+                                pdt_name = top.strip().replace(lang_option, '')
+                            else:
+                                pdt_name = top.strip()
+                            product = PLD.findClosetMatch(pdt_name)
+                            ans = "The product " + product + " will is releasing in "
+                            ptok = GCSO.findProduct(product)
+                            try:
+                                assert ptok != None
+                            except AssertionError:
+                                return "Internal Database Error"
+                            ans = ans + ptok.FCSDate
+                            return ans
+
+
 
             for query in self.query:
                 for intent in self.intent:
                     for top in self.topic:
                         for action in self.action:
-                            if query.lower().strip() in WB.dataQuriesLang and (PLD.getMatchScore(top.strip()) > 2000) and intent.lower().strip() in WB.dataQuestionHowMuch:
 
+                            if query.lower().strip() in WB.dataQuriesLang and (PLD.getMatchScore(top.strip()) > 2000) and intent.lower().strip() in WB.dataQuestionHowMuch:
                                 #Return avaliable languages for the product.
                                 languages = PLD.getAllAvaliableLanguages(PLD.findClosetMatch(top.strip()))
                                 ans_str = "The product " + PLD.findClosetMatch(top.strip()) + " is available in "
@@ -49,6 +74,27 @@ class Token:
                                     ans_str = ans_str + languages[i] + ", "
                                 ans_str = ans_str + "and " + languages[-1] + "."
                                 return ans_str
+                            elif (query.lower().strip() in WB.dataQueryTypeTime) and (PLD.getMatchScore(top.strip()) > 2000) and (intent.lower().strip() in WB.dataQuestionWhat):
+                                lang = False
+                                lang_option = None
+                                for q in top.strip().split(" "):
+                                    if q.lower() in [l.lower() for l in PLD.getAllLangOptions()]:
+                                        lang = True
+                                        lang_option = q
+                                if lang == True:
+                                    pdt_name = top.strip().replace(lang_option, '')
+                                else:
+                                    pdt_name = top.strip()
+                                product = PLD.findClosetMatch(pdt_name)
+                                print product
+                                ans = "The product " + product + " will is releasing in "
+                                ptok = GCSO.findProduct(product)
+                                try:
+                                    assert ptok != None
+                                except AssertionError:
+                                    return "Internal Database Error"
+                                ans = ans + ptok.FCSDate
+                                return ans
                             elif action.lower().strip() in WB.dataReleasing and intent.lower().strip() in WB.dataQuestionTime and (PLD.getMatchScore(query.strip()) > 2000) :
                                 lang = False
                                 lang_option = None
@@ -97,6 +143,13 @@ class Token:
                                 ans_str = ans_str + languages[i] + ", "
                             ans_str = ans_str + "and " + languages[-1] + "."
                             return ans_str
+                        elif query.lower().strip() in WB.dataQuriesLang and (PLD.getMatchScore(top.strip()) > 2000) and intent.lower().strip() in WB.dataQuestionWhat:
+                            languages = PLD.getAllAvaliableLanguages(PLD.findClosetMatch(top.strip()))
+                            ans_str = "The product " + PLD.findClosetMatch(top.strip()) + " is available in "
+                            for i in range(0, len(languages) - 1):
+                                ans_str = ans_str + languages[i] + ", "
+                            ans_str = ans_str + "and " + languages[-1] + "."
+                            return ans_str
                         elif query.lower().strip() == "development processes" and (PLD.getMatchScore(top.strip()) > 2000) :
                             return "The product " + top + " needs Kit Prep, SW Engineering processes in localization. "
                         elif query.lower().strip() == "li units" and (PLD.getMatchScore(top.strip()) > 2000) :
@@ -117,7 +170,6 @@ class Token:
             for intent in self.intent:
                 for query in self.query:
                     for action in self.action:
-                        print 3
                         if action.lower().strip() in WB.dataReleasing and intent.lower().strip() in WB.dataQuestionTime and (PLD.getMatchScore(query.strip()) > 2000):
                             lang = False
                             lang_option = None

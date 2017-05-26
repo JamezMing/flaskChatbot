@@ -8,17 +8,17 @@ class GCSODatabase:
         con.text_factory = str
         cur = con.cursor()
         cur.execute(
-            "CREATE TABLE gcso (Modified, 'Product Line Code', 'Product Line', 'Release Type', Release, 'Media Type',"
+            "CREATE TABLE gcso (Modified, 'Product Line Code', 'Product Line', 'Release Type', Release, 'Language Code Name', 'Media Type',"
             "'Languages Available', 'Fiscal Year', 'RTM Date', 'RTP Date', 'RTW Date', "
             "'FCS Date', 'Quarter');")
         with open(path, 'rb') as fin:  # `with` statement available in 2.5+
             # csv.DictReader uses first line in file for column headings by default
             dr = csv.DictReader(fin)  # comma is default delimiter
-            to_db = [(i['Modified'], i['Product Line Code'], i['Product Line'], i['Release Type'], i['Release'], i['Media Type'],
+            to_db = [(i['Modified'], i['Product Line Code'], i['Product Line'], i['Release Type'], i['Release'], i['Language Code Name'], i['Media Type'],
                       i['Languages-Available'], i['Fiscal Year'], i['RTM Date'],
                       i['RTP Date'], i['RTW Date'], i['FCS Date'], i['Qtr']) for i in dr]
         cur.executemany(
-            "INSERT INTO gcso (Modified, 'Product Line Code', 'Product Line', 'Release Type', Release, 'Media Type',"
+            "INSERT INTO gcso (Modified, 'Product Line Code', 'Product Line', 'Release Type', Release, 'Language Code Name', 'Media Type',"
         "'Languages Available', 'Fiscal Year', 'RTM Date', 'RTP Date', 'RTW Date', "
         "'FCS Date', 'Quarter') VALUES (?, ?, ?, ?, ?, ? ,?, ?, ?, ?, ?, ?, ?);",
             to_db)
@@ -28,6 +28,7 @@ class GCSODatabase:
     def findProduct(self, name):
         query = 'SELECT * FROM gcso WHERE "Product Line" = ' + "'" + name + "'"
         cur = self.df.cursor()
+        resList = []
         cur.execute(query)
         stats = cur.fetchall()
         if len((stats)) == 0:
@@ -51,9 +52,10 @@ class GCSODatabase:
         if len(stats) == 0:
             return None
         else:
-            stats = stats[0]
-            projtok = ProjectToken(stats[0],stats[1],stats[2],stats[3],stats[4],stats[5],stats[6],stats[7],stats[8],stats[9],stats[10],stats[11], stats[12])
-            return projtok
+            for stat in stats:
+                projtok = ProjectToken(stat[0],stat[1],stat[2],stat[3],stat[4],stat[5],stat[6],stat[7],stat[8],stat[9],stat[10],stat[11], stat[12], stat[13])
+                resList.append(projtok)
+            return resList
 
 
     def findProductLanguage(self, name, language):
@@ -83,7 +85,7 @@ class GCSODatabase:
             return None
         else:
             stats = stats[0]
-            projtok = ProjectToken(stats[0],stats[1],stats[2],stats[3],stats[4],stats[5],stats[6],stats[7],stats[8],stats[9],stats[10],stats[11], stats[12])
+            projtok = ProjectToken(stats[0],stats[1],stats[2],stats[3],stats[4],stats[5],stats[6],stats[7],stats[8],stats[9],stats[10],stats[11], stats[12], stats[13])
             return projtok
 
 

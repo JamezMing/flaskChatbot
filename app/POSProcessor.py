@@ -41,18 +41,34 @@ class Processor:
 
 
             if  i < len(self.posList)-1 and self.posList[i][1] == "WRB" and self.posList[i+1][1] == "RB" and i < 2:
+                listFlags['hasWRB'] == True
                 self.intent.append(self.posList[i][0] + " " + self.posList[i+1][0])
 
-            elif listFlags['hasWRB'] == True and listFlags['hasBE'] == True and self.posList[i][1] == "VBG":
+            elif listFlags['hasWRB'] == True and listFlags['hasBE'] == True and (self.posList[i][1] == "VBG" or self.posList[i][1] == "VBN"):
                 self.action.append(self.posList[i][0])
+
+                # WRB: When, where etc. , how many locales
+            elif self.posList[i][1] == "WRB" and self.posList[i + 1][1] == "JJ" and (
+                self.posList[i + 2][1] in listNN) and i < len(self.posList) - 2 and i < 2:
+                listFlags['hasWRB'] == True
+                self.intent.append(self.posList[i][0] + " " + self.posList[i + 1][0])
+                j = i + 2
+                enquiry = ""
+                while (j < len(self.posList) and (self.posList[j][1] in listNN)):
+                    enquiry = enquiry + self.posList[j][0] + " "
+                    j = j + 1
+                self.enquiryfield.append(enquiry)
+                skip = j - i
 
             # How many
             elif  i < len(self.posList)-1 and self.posList[i][1] == "WRB" and self.posList[i+1][1] == "JJ" and i < 2:
+                listFlags['hasWRB'] == True
                 self.intent.append(self.posList[i][0] + " " + self.posList[i+1][0])
+                skip = 1
 
             #C23 deleted
             #In English/In Chinese etc
-            elif i < len(self.posList)-1 and self.posList[i][1] == "IN" and (self.posList[i+1][1] == 'LANG'):
+            elif i < len(self.posList)-1 and self.posList[i][1] == "IN" and (self.posList[i][0].lower() in [l.lower() for l in pdb.getAllLangOptions()]):
                 self.subject.append(self.posList[i+1][0])
 
             #When is AutoCAD releasing? /How many languages are AutoCAD released in?(Be verb with product name
@@ -60,30 +76,21 @@ class Processor:
                 listFlags['hasBE'] = True
                 self.intent.append(self.posList[i][0])
                 j = i + 1
-                enquiry = ""
+                subject = ""
                 while (j < len(self.posList) and (self.posList[j][1] in listNN)):
-                    enquiry = enquiry + self.posList[j][0] + " "
+                    subject = subject + self.posList[j][0] + " "
                     j = j + 1
                 j = j - 1
-                self.enquiryfield.append(enquiry)
+                self.subject.append(subject)
                 skip = j - i
                 if self.posList[j+1][1] == "JJ" or self.posList[j+1][1] == "VBN" or self.posList[j+1][1] == "VBD":
-                    self.intent.append(self.posList[j+1][0])
+                    self.action.append(self.posList[j+1][0])
                     skip = skip + 1
             #MD: Could, Would, will etc. Modal + Noun Phrases: Will Autocad be released in May? In this case, Autocad is the enquiry
             elif i < 3 and self.posList[i][0] == "MD" and i < len(self.posList) - 1 and (self.posList[i+1][0] in listNN):
                 self.enquiryfield.append(self.posList[i+1][1])
                 skip = 1
-            #WRB: When, where etc. , how many locales
-            elif self.posList[i][1] == "WRB" and self.posList[i+1][1] == "JJ" and (self.posList[i+2][1] in listNN) and i < len(self.posList)-2 and i < 2:
-                self.intent.append(self.posList[i][0] + " " + self.posList[i+1][0])
-                j = i+2
-                enquiry = ""
-                while (j < len(self.posList) and (self.posList[j][1] in listNN)):
-                    enquiry = enquiry + self.posList[j][0] + " "
-                    j=j+1
-                self.enquiryfield.append(enquiry)
-                skip = j - i
+
             #How many + product name
             elif self.posList[i][1] == "WRB" and self.posList[i+1][1] == "JJ" and (self.posList[i+2][1] == 'PDT') and i < len(self.posList)-2 and i < 2:
                 self.intent.append(self.posList[i][0] + " " + self.posList[i+1][0])
@@ -97,7 +104,9 @@ class Processor:
 
             #WP: Who, what + verb: Who took my cheese? Who took away his meaning of life?
             elif self.posList[i][1] == "WP" and self.posList[i+1][1] in listVB and (self.posList[i+2][1] == "DT" or self.posList[i+2][1] == 'PRP$') and (self.posList[i+3][1] in listNN) and i < len(self.posList)-3 and i < 2:
-                self.intent.append(self.posList[i][0] + " " + self.posList[i+1][0])
+                self.intent.append(self.posList[i][0])
+                self.action.append(self.posList[i+1][0])
+                j = i + 3
                 enquiry = ""
                 if self.posList[j][1] in listNN:
                     while (j < len(self.posList) and (self.posList[j][1] in listNN)):
@@ -107,7 +116,6 @@ class Processor:
                     skip = j - i
             #What languages does Autocad support?
             elif self.posList[i][1] == "WP" and self.posList[i+1][1] in listNN and self.posList[i+2][1] in listBE and i < len(self.posList)-1:
-                print "C4"
                 self.intent.append(self.posList[i][0])
                 j = i+1
                 enquiry = ""
@@ -173,6 +181,7 @@ class Processor:
 
 
             elif self.posList[i][1] == "WRB" and i < 2:
+                print "C"
                 listFlags['hasWRB'] = True
                 self.intent.append(self.posList[i][0])
 

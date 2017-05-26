@@ -1,10 +1,11 @@
 import csv, sqlite3
 from fuzzywuzzy import fuzz, process
+import POSTagger
 
-
+blacklist = ['for', 'in', 'with']
 class ProductLanguageDatabase:
     def __init__(self, path = '/home/james/PycharmProjects/flaskChatbot/database/db.csv'):
-
+        self.tagger = POSTagger.POSTagger()
         con = sqlite3.connect(":memory:", check_same_thread=False)
         con.text_factory = str
 
@@ -135,7 +136,10 @@ class ProductLanguageDatabase:
         keys = {}
         for name in ((r.lower()) for r in res):
             words = name.strip().split(" ")
+
             for word in words:
+                if word in blacklist:
+                    continue
                 if word not in keys:
                     keys.setdefault(word, [])
                 keys[word].append(name.strip())
@@ -152,3 +156,5 @@ class ProductLanguageDatabase:
 
 
 
+PL = ProductLanguageDatabase()
+print PL.checkLanguageAvaliability("AutoCAD", "Finnish")
