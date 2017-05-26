@@ -14,3 +14,4 @@ class ProjectToken:
         self.RTWDate = RTWDate
         self.FCSDate = FCSDate
         self.Quarter = Quarter
+
