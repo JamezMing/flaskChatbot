@@ -47,11 +47,16 @@ class Token:
                                     lang_option = q
                             if lang == True:
                                 pdt_name = top.strip().replace(lang_option, '')
+                                print pdt_name
+                                product = PLD.findClosetMatch(pdt_name)
+                                ans = "The product " + product + " in language " + lang_option + " is releasing in "
+                                ptok = GCSO.findProductLanguage(product, lang_option)
                             else:
                                 pdt_name = top.strip()
-                            product = PLD.findClosetMatch(pdt_name)
-                            ans = "The product " + product + " will is releasing in "
-                            ptok = GCSO.findProduct(product)
+                                print pdt_name
+                                product = PLD.findClosetMatch(pdt_name)
+                                ans = "The product " + product + " will is releasing in "
+                                ptok = GCSO.findProduct(product)
                             try:
                                 assert ptok != None
                             except AssertionError:
@@ -82,13 +87,17 @@ class Token:
                                         lang = True
                                         lang_option = q
                                 if lang == True:
-                                    pdt_name = top.strip().replace(lang_option, '')
+                                    pdt_name = query.strip().replace(lang_option, '')
+                                    print pdt_name
+                                    product = PLD.findClosetMatch(pdt_name)
+                                    ans = "The product " + product + " in language " + lang_option + " is releasing in "
+                                    ptok = GCSO.findProductLanguage(product, lang_option)
                                 else:
-                                    pdt_name = top.strip()
-                                product = PLD.findClosetMatch(pdt_name)
-                                print product
-                                ans = "The product " + product + " will is releasing in "
-                                ptok = GCSO.findProduct(product)
+                                    pdt_name = query.strip()
+                                    print pdt_name
+                                    product = PLD.findClosetMatch(pdt_name)
+                                    ans = "The product " + product + " will is releasing in "
+                                    ptok = GCSO.findProduct(product)
                                 try:
                                     assert ptok != None
                                 except AssertionError:
@@ -150,6 +159,34 @@ class Token:
                                 ans_str = ans_str + languages[i] + ", "
                             ans_str = ans_str + "and " + languages[-1] + "."
                             return ans_str
+                        elif (intent.strip().lower() in WB.dataQuestionWhat) and (
+                            query.strip().lower() in WB.dataLangGap):
+                            entities = top.split("and")
+                            pdt1 = PLD.findClosetMatch(entities[0].strip())
+                            pdt2 = PLD.findClosetMatch(entities[1].strip())
+                            gap1, gap2 = PLD.getLanguageGap(pdt1, pdt2)
+                            ans = ""
+
+                            if len(gap1) == 0 and len(gap2) == 0:
+                                return "The second product " + pdt2 + " is compatitable with all the language supported by the first product " + pdt1 + "."
+
+                            if len(gap1) != 0:
+                                ans = "The first product " + pdt1 + " has "
+                                for i in range(0, len(gap1) - 1):
+                                    ans = ans + gap1[i] + ", "
+                                ans = ans + " and " + gap1[-1] + " while the second product " + pdt2 + " has not. "
+                            else:
+                                ans = ans + "The second product " + pdt2 + " is compatitable with all the language supported by the first product " + pdt1 + "."
+
+                            if len(gap2) != 0:
+                                ans = ans + "The second product " + pdt2 + " has "
+                                for i in range(0, len(gap2) - 1):
+                                    ans = ans + gap2[i] + ", "
+                                ans = ans + " and " + gap2[-1] + " while the first product " + pdt1 + " has not. "
+                            else:
+                                ans = ans + "The first product " + pdt1 + " is compatitable with all the language supported by the second product " + pdt2 + "."
+
+                            return ans
                         elif query.lower().strip() == "development processes" and (PLD.getMatchScore(top.strip()) > 2000) :
                             return "The product " + top + " needs Kit Prep, SW Engineering processes in localization. "
                         elif query.lower().strip() == "li units" and (PLD.getMatchScore(top.strip()) > 2000) :
@@ -180,12 +217,16 @@ class Token:
                             print lang_option
                             if lang == True:
                                 pdt_name = query.strip().replace(lang_option, '')
+                                print pdt_name
+                                product = PLD.findClosetMatch(pdt_name)
+                                ans = "The product " + product + " in language " + lang_option + " is releasing in "
+                                ptok = GCSO.findProductLanguage(product, lang_option)
                             else:
                                 pdt_name = query.strip()
-                            print pdt_name
-                            product = PLD.findClosetMatch(pdt_name)
-                            ans = "The product " + product + " will is releasing in "
-                            ptok = GCSO.findProduct(product)
+                                print pdt_name
+                                product = PLD.findClosetMatch(pdt_name)
+                                ans = "The product " + product + " will is releasing in "
+                                ptok = GCSO.findProduct(product)
                             try:
                                 assert ptok != None
                             except AssertionError:

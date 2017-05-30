@@ -21,7 +21,7 @@ class WordDatabase:
         self.dataReleasing = ["releasing", "release", "released", "publish", "post", "upload", "launch", "available", "launched",  "announce", "disclose", "reveal", "distribute" ]
         self.dataAction = ["localise", "translate", "localize"]
         self.dataReset = ["new conversation", "start over", "end the session", "end session"]
-
+        self.dataLangGap = ["language gap", "gap", "gap of language"]
     def isProduct(self, name):
         res = list()
         for pdt in self.dataProduct:

@@ -126,6 +126,13 @@ class ProductLanguageDatabase:
                 max = score
         return int(score)
 
+    def getLanguageGap(self, pdt1, pdt2):
+
+        pdtlang1 = self.getAllAvaliableLanguages(pdt1)
+        pdtlang2 = self.getAllAvaliableLanguages(pdt2)
+        intersect = set(pdtlang1).intersection(set(pdtlang2))
+        #first return value is what is extra for set1 and second value what is extra for set2
+        return list(set(pdtlang1) - intersect), list(set(pdtlang2) - intersect)
 
 
     def isPartOfName(self, n):
@@ -157,4 +164,4 @@ class ProductLanguageDatabase:
 
 
 PL = ProductLanguageDatabase()
-print PL.checkLanguageAvaliability("AutoCAD", "Finnish")
+print PL.getLanguageGap("AutoCAD", "Autodesk BIM 360 Document Managment")
