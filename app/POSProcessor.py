@@ -217,6 +217,16 @@ class Processor:
                 print "C18"
                 self.subject.append(self.posList[i][0] + " " + self.posList[i + 1][0] + " " + self.posList[i + 2][0])
 
+            elif self.posList[i][1] == "JJ" and i < len(self.posList)-1 and self.posList[i+1][1] in listNN:
+                print "C19-JJ"
+                enquiry = self.posList[i][0] + " "
+                j = i + 1
+                while (j < len(self.posList) and (self.posList[j][1] in listNN)):
+                    enquiry = enquiry + self.posList[j][0] + " "
+                    j = j + 1
+                self.subject.append(enquiry)
+                skip = j - i
+
             elif self.posList[i][1] in listNN and i < len(self.posList)-1 and self.posList[i+1][1] in listNN:
                 print "C19"
                 enquiry = self.posList[i][0] + " "

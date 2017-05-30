@@ -38,30 +38,43 @@ class Token:
                 for top in self.topic:
                     for action in self.action:
                         if action.lower().strip() in WB.dataReleasing and intent.lower().strip() in WB.dataQuestionTime and (
-                            PLD.getMatchScore(top.strip()) > 2000):
-                            lang = False
-                            lang_option = None
-                            for q in top.strip().split(" "):
-                                if q.lower() in [l.lower() for l in PLD.getAllLangOptions()]:
-                                    lang = True
-                                    lang_option = q
-                            if lang == True:
-                                pdt_name = top.strip().replace(lang_option, '')
-                                print pdt_name
-                                product = PLD.findClosetMatch(pdt_name)
-                                ans = "The product " + product + " in language " + lang_option + " is releasing in "
-                                ptok = GCSO.findProductLanguage(product, lang_option)
+                            PLD.getMatchScore(top.strip()) > 3500):
+                            if len(set([s.strip().lower() for s in self.topic]).intersection(set(WB.dataLastVersion))) == 0:
+                                lang = False
+                                lang_option = None
+                                for q in top.strip().split(" "):
+                                    if q.lower() in [l.lower() for l in PLD.getAllLangOptions()]:
+                                        lang = True
+                                        lang_option = q
+                                if lang == True:
+                                    pdt_name = top.strip().replace(lang_option, '')
+                                    product = PLD.findClosetMatch(pdt_name)
+                                    ans = "The product " + product + " in language " + lang_option + " is releasing in "
+                                    ptok = GCSO.findProductLanguage(product, lang_option)
+                                else:
+                                    pdt_name = top.strip()
+                                    print pdt_name
+                                    product = PLD.findClosetMatch(pdt_name)
+                                    print product
+                                    ans = "The product " + product + " was released in "
+                                    ptok = GCSO.findProduct(product)
+                                try:
+                                    assert ptok != None
+                                except AssertionError:
+                                    return "Internal Database Error"
+                                ans = ans + ptok.FCSDate
                             else:
                                 pdt_name = top.strip()
                                 print pdt_name
                                 product = PLD.findClosetMatch(pdt_name)
-                                ans = "The product " + product + " will is releasing in "
-                                ptok = GCSO.findProduct(product)
-                            try:
-                                assert ptok != None
-                            except AssertionError:
-                                return "Internal Database Error"
-                            ans = ans + ptok.FCSDate
+                                print product
+                                ans = "The most recent version of product " + product + " was released in "
+                                ptok = GCSO.findProduct(product, last=True)
+                                try:
+                                    assert ptok != None
+                                except AssertionError:
+                                    return "Internal Database Error"
+                                ans = ans + ptok.FCSDate
                             return ans
 
 
@@ -71,7 +84,7 @@ class Token:
                     for top in self.topic:
                         for action in self.action:
 
-                            if query.lower().strip() in WB.dataQuriesLang and (PLD.getMatchScore(top.strip()) > 2000) and intent.lower().strip() in WB.dataQuestionHowMuch:
+                            if query.lower().strip() in WB.dataQuriesLang and (PLD.getMatchScore(top.strip()) > 3500) and intent.lower().strip() in WB.dataQuestionHowMuch:
                                 #Return avaliable languages for the product.
                                 languages = PLD.getAllAvaliableLanguages(PLD.findClosetMatch(top.strip()))
                                 ans_str = "The product " + PLD.findClosetMatch(top.strip()) + " is available in "
@@ -79,7 +92,7 @@ class Token:
                                     ans_str = ans_str + languages[i] + ", "
                                 ans_str = ans_str + "and " + languages[-1] + "."
                                 return ans_str
-                            elif (query.lower().strip() in WB.dataQueryTypeTime) and (PLD.getMatchScore(top.strip()) > 2000) and (intent.lower().strip() in WB.dataQuestionWhat):
+                            elif (query.lower().strip() in WB.dataQueryTypeTime) and (PLD.getMatchScore(top.strip()) > 3500) and (intent.lower().strip() in WB.dataQuestionWhat):
                                 lang = False
                                 lang_option = None
                                 for q in top.strip().split(" "):
@@ -87,16 +100,16 @@ class Token:
                                         lang = True
                                         lang_option = q
                                 if lang == True:
-                                    pdt_name = query.strip().replace(lang_option, '')
+                                    pdt_name = top.strip().replace(lang_option, '')
                                     print pdt_name
                                     product = PLD.findClosetMatch(pdt_name)
                                     ans = "The product " + product + " in language " + lang_option + " is releasing in "
                                     ptok = GCSO.findProductLanguage(product, lang_option)
                                 else:
-                                    pdt_name = query.strip()
-                                    print pdt_name
+                                    pdt_name = top.strip()
                                     product = PLD.findClosetMatch(pdt_name)
-                                    ans = "The product " + product + " will is releasing in "
+                                    print product
+                                    ans = "The product " + product + " is releasing in "
                                     ptok = GCSO.findProduct(product)
                                 try:
                                     assert ptok != None
@@ -104,7 +117,7 @@ class Token:
                                     return "Internal Database Error"
                                 ans = ans + ptok.FCSDate
                                 return ans
-                            elif action.lower().strip() in WB.dataReleasing and intent.lower().strip() in WB.dataQuestionTime and (PLD.getMatchScore(query.strip()) > 2000) :
+                            elif action.lower().strip() in WB.dataReleasing and intent.lower().strip() in WB.dataQuestionTime and (PLD.getMatchScore(query.strip()) > 3500) :
                                 lang = False
                                 lang_option = None
                                 for q in query.strip().split(" "):
@@ -112,11 +125,11 @@ class Token:
                                         lang = True
                                         lang_option = q
                                 if lang == True:
-                                    pdt_name = query.strip().replace(lang_option, '')
+                                    pdt_name = top.strip().replace(lang_option, '')
                                 else:
-                                    pdt_name = query.strip()
+                                    pdt_name = top.strip()
                                 product = PLD.findClosetMatch(pdt_name)
-                                ans = "The product " + product + " will is releasing in "
+                                ans = "The product " + product + " is releasing in "
                                 ptok = GCSO.findProduct(product)
                                 try:
                                     assert ptok != None
@@ -126,11 +139,11 @@ class Token:
                                 return ans
                             elif query.lower().strip() == "development processes" and top in WB.dataProduct:
                                 return "The product " + top + " needs Kit Prep, SW Engineering processes in localization. "
-                            elif query.lower().strip() == "li units" and (PLD.getMatchScore(query.strip()) > 2000) :
+                            elif query.lower().strip() == "li units" and (PLD.getMatchScore(query.strip()) > 3500) :
                                 for field in self.topic:
                                     if field.strip() in WB.dataDevComponents:
                                         return "The " + field + " process of product " + top + " needs 10 LI Units to finish. "
-                            elif (PLD.getMatchScore(query.strip()) > 2000):
+                            elif (PLD.getMatchScore(query.strip()) > 3500):
                                 for intent in self.intent:
                                     if intent.lower().strip() == "available":
                                         for sub in self.topic:
@@ -144,7 +157,7 @@ class Token:
                 for query in self.query:
                     for top in self.topic:
 
-                        if query.lower().strip() in WB.dataQuriesLang and (PLD.getMatchScore(top.strip()) > 2000) and intent.lower().strip() in WB.dataQuestionHowMuch:
+                        if query.lower().strip() in WB.dataQuriesLang and (PLD.getMatchScore(top.strip()) > 3500) and intent.lower().strip() in WB.dataQuestionHowMuch:
                             #Return avaliable languages for the product.
                             languages = PLD.getAllAvaliableLanguages(PLD.findClosetMatch(top.strip()))
                             ans_str = "The product " + PLD.findClosetMatch(top.strip()) + " is available in "
@@ -152,7 +165,7 @@ class Token:
                                 ans_str = ans_str + languages[i] + ", "
                             ans_str = ans_str + "and " + languages[-1] + "."
                             return ans_str
-                        elif query.lower().strip() in WB.dataQuriesLang and (PLD.getMatchScore(top.strip()) > 2000) and intent.lower().strip() in WB.dataQuestionWhat:
+                        elif query.lower().strip() in WB.dataQuriesLang and (PLD.getMatchScore(top.strip()) > 3500) and intent.lower().strip() in WB.dataQuestionWhat:
                             languages = PLD.getAllAvaliableLanguages(PLD.findClosetMatch(top.strip()))
                             ans_str = "The product " + PLD.findClosetMatch(top.strip()) + " is available in "
                             for i in range(0, len(languages) - 1):
@@ -187,13 +200,13 @@ class Token:
                                 ans = ans + "The first product " + pdt1 + " is compatitable with all the language supported by the second product " + pdt2 + "."
 
                             return ans
-                        elif query.lower().strip() == "development processes" and (PLD.getMatchScore(top.strip()) > 2000) :
+                        elif query.lower().strip() == "development processes" and (PLD.getMatchScore(top.strip()) > 3500) :
                             return "The product " + top + " needs Kit Prep, SW Engineering processes in localization. "
-                        elif query.lower().strip() == "li units" and (PLD.getMatchScore(top.strip()) > 2000) :
+                        elif query.lower().strip() == "li units" and (PLD.getMatchScore(top.strip()) > 3500) :
                             for field in self.topic:
                                 if field.strip() in WB.dataDevComponents:
                                     return "The " + field + " process of product " + top + " needs 10 LI Units to finish. "
-                        elif(PLD.getMatchScore(query.strip()) > 2000):
+                        elif(PLD.getMatchScore(query.strip()) > 3500):
                             for intent in self.intent:
                                 if intent.lower().strip() == "available":
                                     for sub in self.topic:
@@ -207,7 +220,7 @@ class Token:
             for intent in self.intent:
                 for query in self.query:
                     for action in self.action:
-                        if action.lower().strip() in WB.dataReleasing and intent.lower().strip() in WB.dataQuestionTime and (PLD.getMatchScore(query.strip()) > 2000):
+                        if action.lower().strip() in WB.dataReleasing and intent.lower().strip() in WB.dataQuestionTime and (PLD.getMatchScore(query.strip()) > 3500):
                             lang = False
                             lang_option = None
                             for q in query.strip().split(" "):
@@ -223,9 +236,9 @@ class Token:
                                 ptok = GCSO.findProductLanguage(product, lang_option)
                             else:
                                 pdt_name = query.strip()
-                                print pdt_name
                                 product = PLD.findClosetMatch(pdt_name)
-                                ans = "The product " + product + " will is releasing in "
+                                print product
+                                ans = "The product " + product + " was released in "
                                 ptok = GCSO.findProduct(product)
                             try:
                                 assert ptok != None
@@ -234,7 +247,7 @@ class Token:
                             ans = ans + ptok.FCSDate
                             return ans
 
-                        elif (PLD.getMatchScore(query.strip()) > 2000):
+                        elif (PLD.getMatchScore(query.strip()) > 3500):
                             for intent in self.intent:
                                 if intent.lower().strip() == "available":
                                     for sub in self.topic:

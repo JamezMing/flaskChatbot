@@ -41,7 +41,7 @@ class GCSODatabase:
         con.commit()
         self.df = con
 
-    def findProduct(self, name):
+    def findProduct(self, name, last = False):
         query = 'SELECT * FROM gcso WHERE "Product Line" = ' + "'" + name + "'"
         cur = self.df.cursor()
         resList = []
@@ -78,7 +78,10 @@ class GCSODatabase:
                     print "TOK val: " + str(projtok.FCSDate)
                     datetime.datetime.strptime(str(projtok.FCSDate), '%m/%d/%y %H:%M:%S')
 
-            return bubblesort(resList)[0]
+            if last == True:
+                return bubblesort(resList)[-1]
+            else:
+                return bubblesort(resList)[0]
 
 
     def findProductLanguage(self, name, language):
@@ -125,4 +128,4 @@ class GCSODatabase:
 
 
 g= GCSODatabase()
-print g.findProductLanguage("Autodesk Vault Office", "French").FCSDate
+print g.findProduct("AutoCAD").FCSDate

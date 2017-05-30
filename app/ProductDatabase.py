@@ -164,4 +164,4 @@ class ProductLanguageDatabase:
 
 
 PL = ProductLanguageDatabase()
-print PL.getLanguageGap("AutoCAD", "Autodesk BIM 360 Document Managment")
+print PL.getMatchScore("AutoKad")
