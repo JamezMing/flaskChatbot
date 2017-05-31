@@ -1,7 +1,6 @@
 class WordDatabase:
     def __init__(self):
         self.dataGreetings = ["Hi, Congroo", "Hi Congroo", "Congroo", "Hi there"]
-        self.dataLanguage = ["Japanese", "English", "French", "German", "Chinese", "Korean", "Turkey"]
         self.dataKeyPhrases = ["LI Units", "word units", "words"]
         self.dataTime = ["time"]
         self.dataQuriesLang = ["languages", "versions", "language", "version", "locales", "locale"]

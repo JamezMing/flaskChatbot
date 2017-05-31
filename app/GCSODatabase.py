@@ -119,6 +119,7 @@ class GCSODatabase:
                 if language in self.pd.getAllLangOptions():
                     if langCode[0] == "Non-Language Specific":
                         continue
+
                     elif langCode[0] == "Regional Non-Specific EMEA" or langCode[0] == 'Rgnl Non-Specific AMER/E_EMEA' or langCode[0] == 'Regional Non-Specific APAC':
                         if language in langList:
                             return projtok
@@ -128,4 +129,4 @@ class GCSODatabase:
 
 
 g= GCSODatabase()
-print g.findProduct("AutoCAD").FCSDate
+print g.findProduct("AutoCAD", True).langCodeName
