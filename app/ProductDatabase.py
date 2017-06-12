@@ -86,19 +86,32 @@ class ProductLanguageDatabase:
             return True
 
     def findClosetMatch(self, name):
+        names = PL.getSimilarNames(name.lower())
+        max = 0
+        match = ""
+        poset = process.extract(name, names)
+        for po in poset:
+            score = float(po[1]) * fuzz.token_set_ratio(po[0], name) * 1.0 / 100.0
+            if score > max:
+                max = score
+                match = po[0]
+        return self.getFullName(match)
+
+    def getAllNames(self):
         query = "SELECT Language FROM t"
         cur = self.df.cursor()
         cur.execute(query)
         res = [r[0] for r in cur.fetchall()]
-        max = 0
-        match = ""
-        poset = process.extract(name, res)
-        for po in poset:
-            score = int(fuzz.token_sort_ratio(name, po[0])) * int(po[1])
-            if score > max:
-                max = score
-                match = po[0]
-        return match
+        return res
+
+    def getFullName(self, name):
+        query = "SELECT Language FROM t"
+        cur = self.df.cursor()
+        cur.execute(query)
+        res = [r[0] for r in cur.fetchall()]
+        for r in res:
+            if r.lower() == name.lower():
+                return r
 
 
     def findPossibleMatches(self, name):
@@ -121,10 +134,11 @@ class ProductLanguageDatabase:
         max = 0
         poset = process.extract(name, res)
         for po in poset:
-            score = int(fuzz.token_sort_ratio(name, po[0])) * int(po[1])
+            score = float(po[1])*fuzz.token_set_ratio(po[0], name)*1.0/100.0
             if score > max:
                 max = score
-        return int(score)
+
+        return float(score)
 
     def getLanguageGap(self, pdt1, pdt2):
 
@@ -150,10 +164,60 @@ class ProductLanguageDatabase:
                 if word not in keys:
                     keys.setdefault(word, [])
                 keys[word].append(name.strip())
-
-        if str(n).lower() not in (k.lower() for k in keys.keys()):
-                return False
+        nlist = str(n).split(" ")
+        for nl in nlist:
+            if str(nl).lower() not in (k.lower() for k in keys.keys()):
+                    return False
         return True
+
+    def getSimilarNames(self, n):
+        query = "SELECT Language FROM t"
+        cur = self.df.cursor()
+        cur.execute(query)
+        res = [r[0] for r in cur.fetchall()]
+        keys = {}
+        for name in ((r.lower()) for r in res):
+            words = name.strip().split(" ")
+
+            for word in words:
+                if word in blacklist:
+                    continue
+                if word not in keys:
+                    keys.setdefault(word, [])
+                keys[word].append(name.strip())
+        nlist = str(n).strip().split(" ")
+        sets = []
+        for nl in nlist:
+            try:
+                sets.append(set(keys[nl]))
+            except Exception:
+                continue
+        if len(sets) == 0:
+            return sets
+
+        inter = sets[0]
+        for i in range(1, len(sets)):
+            inter = set.intersection(inter, sets[i])
+
+        return list(inter)
+
+    def returnAllMatches(self, n):
+        query = "SELECT Language FROM t"
+        cur = self.df.cursor()
+        cur.execute(query)
+        res = [r[0].strip() for r in cur.fetchall()]
+        keys = {}
+        for name in ((r.lower()) for r in res):
+            words = name.strip().split(" ")
+
+            for word in words:
+                if word in blacklist:
+                    continue
+                if word not in keys:
+                    keys.setdefault(word, [])
+                keys[word].append(name.strip())
+        return keys[n]
+
 
     def getAllLangOptions(self):
         query = "pragma table_info(t)"
@@ -164,4 +228,4 @@ class ProductLanguageDatabase:
 
 
 PL = ProductLanguageDatabase()
-print PL.getMatchScore("AutoKad")
+print len(PL.getSimilarNames("vault"))

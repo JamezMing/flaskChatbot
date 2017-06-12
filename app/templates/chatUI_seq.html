@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block content %}
+<html>
+    <style>
+        div.panel
+        {
+          border-style: solid;
+          background-color: #d9f686;
+          border-width: 3px;
+          margin-top: 20px;
+          margin-bottom: 20px;
+          margin-left: 20px;
+          margin-right: 20px;
+          padding-top: 10px;
+          padding-bottom: 15px;
+          padding-right: 20px;
+          padding-left: 15px;
+          border-radius: 15px;
+        }
+        .chat
+        {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .chat li
+        {
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px dotted #B3A9A9;
+        }
+
+        .chat li .chat-body p
+        {
+            margin: 0;
+            color: #777777;
+        }
+
+        ::-webkit-scrollbar-track
+        {
+            -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+            background-color: #F5F5F5;
+        }
+
+        ::-webkit-scrollbar
+        {
+            width: 12px;
+            background-color: #F5F5F5;
+        }
+
+        ::-webkit-scrollbar-thumb
+        {
+            -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+            background-color: #555;
+        }
+
+    </style>
+    <div class="container", style = "width: 800px; height: 480px; top: 20px; left: 80px">
+        <div class="row">
+            <div class="col-md-5">
+                <div class="panel", id = div2>
+                    <div class="panel-body", id="div1" , style="overflow-y: scroll; height:400px;">
+                        <script>
+                            document.body.onload = function()
+                            {
+                                    var myDiv = document.getElementById('div1');
+                                    myDiv.scrollTop = myDiv.scrollHeight;
+                            };
+                        </script>
+                        <ul class="chat">
+                            {% for chat in chats %}
+                            {% if chat.author.nickname == 'bot' %}
+                            <li class="left clearfix"><span class="chat-img pull-left">
+                                <img src="/static/bot.png" alt="User Avatar" class="img-circle">
+                            </span>
+                                <div class="chat-body clearfix">
+                                    <div class="header">
+                                        <strong class="primary-font">Bot</strong> <small class="pull-right text-muted"></small>
+                                    </div>
+                                    <p>
+                                        said : {{ chat.body }}
+                                    </p>
+
+                                </div>
+                            </li>
+                            {% elif chat.author.nickname == 'me' %}
+                            <li class="right clearfix"><span class="chat-img pull-right">
+                                <img src="/static/me.png" alt="User Avatar" class="img-circle">
+                            </span>
+                                <div class="chat-body clearfix">
+                                    <div class="header">
+                                        <strong class="pull-right primary-font">Me</strong>
+                                    </div>
+                                    <p>
+                                        said : {{ chat.body }}
+                                    </p>
+                                </div>
+                            </li>
+                            {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="panel-footer">
+                        <div class="input-group">
+                            <form action = "/chat2/" method = "post" name="inputfield">
+                                {{ form.hidden_tag() }}
+                                <p>{{ form.inputfield(size = 60) }}</p>
+                                <span class="input-group-btn">
+                                        <button class="btn" id="btn-chat" name="send-msg" type="submit">
+                                        Send</button>
+                                </span>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</html>
+{% endblock %}

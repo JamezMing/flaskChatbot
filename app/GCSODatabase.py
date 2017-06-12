@@ -2,6 +2,7 @@ import csv, sqlite3
 import datetime
 import ProductDatabase
 from ProjectToken import ProjectToken
+import NamemappingDatabase as NDb
 
 def bubblesort(pdtlist):
     while True:
@@ -40,6 +41,7 @@ class GCSODatabase:
             to_db)
         con.commit()
         self.df = con
+        self.mapping = NDb.NameDatabase()
 
     def findProduct(self, name, last = False):
         query = 'SELECT * FROM gcso WHERE "Product Line" = ' + "'" + name + "'"
@@ -47,6 +49,14 @@ class GCSODatabase:
         resList = []
         cur.execute(query)
         stats = cur.fetchall()
+        if len(stats) == 0:
+            name = self.mapping.mapping(name)
+            print "Name is " + name
+            query = 'SELECT * FROM gcso WHERE "Product Line" = ' + "'" + name + "'"
+            cur = self.df.cursor()
+            cur.execute(query)
+            stats = cur.fetchall()
+            print stats
         if len((stats)) == 0:
             cpname = "Autodesk " + name
             query = 'SELECT * FROM gcso WHERE "Product Line" = ' + "'" + cpname + "'"
@@ -90,6 +100,13 @@ class GCSODatabase:
         cur = self.df.cursor()
         cur.execute(query)
         stats = cur.fetchall()
+        if len(stats) == 0:
+            name = self.mapping.mapping(name)
+            query = 'SELECT * FROM gcso WHERE "Product Line" = ' + "'" + name + "'"
+            cur = self.df.cursor()
+            cur.execute(query)
+            stats = cur.fetchall()
+            print stats
         if len((stats)) == 0:
             cpname = "Autodesk " + name
             query = 'SELECT * FROM gcso WHERE "Product Line" = ' + "'" + cpname + "'"
@@ -107,10 +124,8 @@ class GCSODatabase:
             query = 'SELECT * FROM gcso WHERE "Product Line" = ' + "'" + name + "'"
             cur = self.df.cursor()
             cur.execute(query)
-
             stats = cur.fetchall()
-        if len(stats) == 0:
-            return None
+
         else:
             for stat in stats:
                 projtok = ProjectToken(stat[0],stat[1],stat[2],stat[3],stat[4],stat[5],stat[6],stat[7],stat[8],stat[9],stat[10],stat[11], stat[12], stat[13])

@@ -69,7 +69,7 @@ class Processor:
             #C23 deleted
             #In English/In Chinese etc
             elif i < len(self.posList)-1 and self.posList[i][1] == "IN" and (self.posList[i][0].lower() in [l.lower() for l in pdb.getAllLangOptions()]):
-                self.subject.append(self.posList[i+1][0])
+                    self.enquiryfield.append(self.posList[i+1][0])
 
             #When is AutoCAD releasing? /How many languages are AutoCAD released in?(Be verb with product name
             elif i <= 3 and self.posList[i][0].lower() in listBE and i < len(self.posList)-1 and self.posList[i+1][1]in listNN:
